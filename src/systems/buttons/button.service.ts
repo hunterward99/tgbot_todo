@@ -1,7 +1,9 @@
 import { Context, Markup } from 'telegraf';
 import { ButtonConfig } from './button.config';
 import { Update, CallbackQuery } from 'telegraf/typings/core/types/typegram';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class ButtonService {
   public async handle(ctx: Context) {
     await ctx.answerCbQuery(); // подтверждаем callback
@@ -13,7 +15,11 @@ export class ButtonService {
 
     const data = ctx.callbackQuery as { data?: string };
 
-    console.log(`data =  ${JSON.stringify(data, null, 2)}`);
+    if (!data)
+      return ctx.reply(
+        `Произошла ошибка при обработке запроса. Попробуйте еще раз.`,
+      );
+
     await ctx.reply(
       `${ctx.from?.first_name}, Вы нажали на кнопку: ${ButtonConfig.find((e) => e.data === data.data)?.text}`,
     );

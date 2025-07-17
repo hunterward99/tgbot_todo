@@ -6,8 +6,13 @@ interface Button {
 
 export const ButtonConfig: Button[] = [
   {
-    text: '📄 Список дел',
+    text: '📄 Список моих задач',
     data: 'list',
+    type: 'start',
+  },
+  {
+    text: '➕ Создать задачу',
+    data: 'create',
     type: 'start',
   },
   {
