@@ -1,10 +1,16 @@
 import { Context, Markup } from 'telegraf';
 import { ButtonConfig } from './button.config';
 import { Update, CallbackQuery } from 'telegraf/typings/core/types/typegram';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class ButtonService {
+  constructor(
+    @Inject(forwardRef(() => AppService))
+    private readonly appService: AppService,
+  ) {}
+
   public async handle(ctx: Context) {
     await ctx.answerCbQuery(); // подтверждаем callback
 
@@ -20,9 +26,16 @@ export class ButtonService {
         `Произошла ошибка при обработке запроса. Попробуйте еще раз.`,
       );
 
-    await ctx.reply(
-      `${ctx.from?.first_name}, Вы нажали на кнопку: ${ButtonConfig.find((e) => e.data === data.data)?.text}`,
-    );
+    if (data.data === 'list') {
+    }
+
+    switch (data.data) {
+      case 'list':
+        this.appService.showUserTask(ctx);
+        break;
+      case 'create':
+        this.appService.createTaskStep1(ctx);
+    }
   }
 
   public showStartButtons() {

@@ -71,8 +71,43 @@ export class AppService {
     }
   }
 
-  async createTask(ctx: Context) {
+  public async showUserTask(ctx: Context) {
+    const user = await this.userRepository.findUser(ctx);
+    if (!user)
+      return ctx.reply(`Ошибка при работе с данными. Пользователь не найден.`);
+
+    const userTasks = await this.taskRepository.getAllbyUserId(
+      user.dataValues.id,
+    );
+    if (userTasks.length === 0) return ctx.reply(`Задач не найдено.`);
+
+    ctx.reply(`Список задач:`);
+
+    userTasks.forEach((e) => {
+      ctx.reply(`Задача: ${e.name}\nОписание: ${e.description}`);
+    });
+  }
+
+  async createTaskStep1(ctx: Context) {
+    const user = await this.userRepository.findUser(ctx);
+    if (!user)
+      return ctx.reply(`Ошибка при работе с данными. Пользователь не найден.`);
+
     await ctx.reply(`Введи название задачи`);
+
+    if (!ctx.session) {
+      ctx.session = {};
+    }
+    ctx.session.status = `waitingInputNameTask`;
+  }
+
+  async createTaskStep2(ctx: Context) {
+    await ctx.reply(`Введи описание задачи`);
+
+    if (!ctx.session) {
+      ctx.session = {};
+    }
+    ctx.session.status = `waitingInputNameTask`;
   }
 
   async showAllTasks() {}

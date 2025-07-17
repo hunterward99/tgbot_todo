@@ -12,6 +12,8 @@ import { ConfigModule } from '@nestjs/config';
 
 const session = new LocalSession({ database: 'session_db.json' });
 
+
+
 @Module({
   controllers: [],
   providers: [AppService, AppController],
@@ -27,5 +29,6 @@ const session = new LocalSession({ database: 'session_db.json' });
     ButtonModule,
     dataRepository,
   ],
+  exports: [AppService],
 })
 export class AppModule {}
