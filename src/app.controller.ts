@@ -14,4 +14,6 @@ export class AppController {
   async getHello(ctx: Context) {
     await this.appService.getHello(ctx);
   }
+
+  // @Action('')
 }
