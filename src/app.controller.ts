@@ -1,13 +1,15 @@
 import { Controller, Get } from '@nestjs/common';
-import { InjectBot, Start, Update } from 'nestjs-telegraf';
+import { InjectBot, Start, Update, On, Action } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { AppService } from './app.service';
+import ButtonService from './systems/buttons/button.service';
 
 @Update()
 export class AppController {
   constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly appService: AppService,
+    private readonly buttonService: ButtonService,
   ) {}
 
   @Start()
@@ -15,5 +17,13 @@ export class AppController {
     await this.appService.getHello(ctx);
   }
 
-  // @Action('')
+  @On('text')
+  async handleText(ctx: Context) {
+    await this.appService.handleTextMessage(ctx);
+  }
+
+  @Action(/.*/)
+  async handleButton(ctx: Context) {
+    await this.buttonService.handle(ctx);
+  }
 }

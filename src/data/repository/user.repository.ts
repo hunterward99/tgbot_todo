@@ -5,6 +5,8 @@ import { Context } from 'telegraf';
 @Injectable()
 export class userRepository {
   private users: UserEntity[] = [];
+  // поменять на мапу
+  // интегрировать Reddis для оптимизации работы с данными
 
   constructor() {}
 

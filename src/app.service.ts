@@ -84,7 +84,7 @@ export class AppService {
     ctx.reply(`Список задач:`);
 
     userTasks.forEach((e) => {
-      ctx.reply(`Задача: ${e.name}\nОписание: ${e.description}`);
+      ctx.reply(`Задача: ${e.name}\n\nОписание: ${e.description}`);
     });
   }
 
@@ -107,8 +107,78 @@ export class AppService {
     if (!ctx.session) {
       ctx.session = {};
     }
-    ctx.session.status = `waitingInputNameTask`;
+    ctx.session.status = `waitingInputDescrTask`;
   }
 
   async showAllTasks() {}
+
+  async handleTextMessage(ctx: Context) {
+    // Проверяем, есть ли сессия и статус
+    if (!ctx.session || !ctx.session.status) {
+      // Если нет активного статуса, показываем справочное сообщение
+      return ctx.reply('Используйте команду /start для начала работы с ботом');
+    }
+
+    const text = ctx.text;
+    if (!text) return;
+
+    const user = await this.userRepository.findUser(ctx);
+    if (!user) {
+      return ctx.reply('Ошибка при работе с данными. Пользователь не найден.');
+    }
+
+    switch (ctx.session.status) {
+      case 'waitingInputNameTask':
+        // Сохраняем название задачи в сессии
+        ctx.session.taskName = text;
+        await this.createTaskStep2(ctx);
+        break;
+
+      case 'waitingInputDescrTask':
+        // Сохраняем описание и создаем задачу
+        ctx.session.taskDescription = text;
+        await this.createTask(ctx);
+        break;
+
+      default:
+        ctx.reply('Используйте команду /start для начала работы с ботом');
+    }
+  }
+
+  async createTask(ctx: Context) {
+    if (!ctx.session || !ctx.session.taskName || !ctx.session.taskDescription) {
+      return ctx.reply('Ошибка: отсутствуют данные для создания задачи');
+    }
+
+    const user = await this.userRepository.findUser(ctx);
+    if (!user) {
+      return ctx.reply('Ошибка при работе с данными. Пользователь не найден.');
+    }
+
+    try {
+      await this.taskRepository.create(
+        user.dataValues.id.toString(),
+        ctx.session.taskName,
+        ctx.session.taskDescription,
+      );
+
+      await ctx.reply(
+        `✅ Задача успешно создана!\n\n📝 Название: ${ctx.session.taskName}\n📄 Описание: ${ctx.session.taskDescription}`,
+        this.buttonService.showStartButtons(),
+      );
+
+      // Очищаем сессию
+      delete ctx.session.status;
+      delete ctx.session.taskName;
+      delete ctx.session.taskDescription;
+    } catch (error) {
+      console.error('Ошибка при создании задачи:', error);
+      ctx.reply('Произошла ошибка при создании задачи. Попробуйте еще раз.');
+
+      // Очищаем сессию при ошибке
+      delete ctx.session.status;
+      delete ctx.session.taskName;
+      delete ctx.session.taskDescription;
+    }
+  }
 }
